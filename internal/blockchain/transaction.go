@@ -127,7 +127,8 @@ func (tx *Transaction) SignInput(inputIndex int, privateKey ed25519.PrivateKey) 
 	}
 
 	tx.Inputs[inputIndex].Signature = sig
-	return nil
+
+	return tx.Finalize()
 }
 
 func (tx Transaction) VerifyInputSignature(inputIndex int) bool {

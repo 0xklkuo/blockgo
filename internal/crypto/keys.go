@@ -3,7 +3,6 @@ package crypto
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	"encoding/hex"
 	"errors"
 )
 
@@ -35,12 +34,4 @@ func Verify(publicKey ed25519.PublicKey, message, signature []byte) bool {
 	}
 
 	return ed25519.Verify(publicKey, message, signature)
-}
-
-func EncodeHex(data []byte) string {
-	return hex.EncodeToString(data)
-}
-
-func DecodeHex(s string) ([]byte, error) {
-	return hex.DecodeString(s)
 }
