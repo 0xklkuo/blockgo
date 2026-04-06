@@ -148,7 +148,7 @@ func (s *UTXOSet) ApplyBlock(block *Block) error {
 			return errors.New("only first transaction may be coinbase")
 		}
 
-		if err := applyTransaction(working, tx); err != nil {
+		if err := ApplyTransaction(working, tx); err != nil {
 			return fmt.Errorf("apply tx %d: %w", txIndex, err)
 		}
 	}
@@ -157,7 +157,7 @@ func (s *UTXOSet) ApplyBlock(block *Block) error {
 	return nil
 }
 
-func applyTransaction(utxos *UTXOSet, tx Transaction) error {
+func ApplyTransaction(utxos *UTXOSet, tx Transaction) error {
 	if utxos == nil {
 		return errors.New("nil utxo set")
 	}

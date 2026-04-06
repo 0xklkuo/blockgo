@@ -126,7 +126,7 @@ func ValidateBlock(block *Block, prevBlock *Block, utxos *UTXOSet) error {
 
 		totalFees += fee
 
-		if err := applyTransaction(working, tx); err != nil {
+		if err := ApplyTransaction(working, tx); err != nil {
 			return fmt.Errorf("apply tx %d: %w", i, err)
 		}
 	}
@@ -135,7 +135,7 @@ func ValidateBlock(block *Block, prevBlock *Block, utxos *UTXOSet) error {
 		return fmt.Errorf("validate coinbase: %w", err)
 	}
 
-	if err := applyTransaction(working, block.Transactions[0]); err != nil {
+	if err := ApplyTransaction(working, block.Transactions[0]); err != nil {
 		return fmt.Errorf("apply coinbase: %w", err)
 	}
 
