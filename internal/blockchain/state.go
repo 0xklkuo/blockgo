@@ -36,6 +36,16 @@ func (s *UTXOSet) Clone() *UTXOSet {
 	return out
 }
 
+func (s *UTXOSet) Entries() map[UTXOKey]TxOutput {
+	if s == nil {
+		return nil
+	}
+
+	out := make(map[UTXOKey]TxOutput, len(s.entries))
+	maps.Copy(out, s.entries)
+	return out
+}
+
 func (s *UTXOSet) Get(out OutPoint) (TxOutput, bool) {
 	if s == nil {
 		return TxOutput{}, false
