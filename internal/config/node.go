@@ -14,6 +14,9 @@ const (
 
 type NodeConfig struct {
 	NodeID              string
+	DataDir             string
+	ListenAddr          string
+	Peers               []string
 	BlockInterval       time.Duration
 	MaxTxPerBlock       int
 	LocalPrivateKey     ed25519.PrivateKey
@@ -27,6 +30,14 @@ func (c *NodeConfig) NormalizeAndValidate() error {
 
 	if c.NodeID == "" {
 		return errors.New("node id is required")
+	}
+
+	if c.DataDir == "" {
+		return errors.New("data dir is required")
+	}
+
+	if c.ListenAddr == "" {
+		return errors.New("listen address is required")
 	}
 
 	if len(c.LocalPrivateKey) != ed25519.PrivateKeySize {

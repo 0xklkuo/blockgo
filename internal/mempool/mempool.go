@@ -8,6 +8,8 @@ import (
 	"blockgo/internal/blockchain"
 )
 
+var ErrTxAlreadyExists = errors.New("transaction already exists in mempool")
+
 type Pool struct {
 	mu  sync.RWMutex
 	txs map[string]blockchain.Transaction
@@ -33,11 +35,19 @@ func (p *Pool) Add(tx blockchain.Transaction) error {
 	defer p.mu.Unlock()
 
 	if _, exists := p.txs[key]; exists {
-		return errors.New("transaction already exists in mempool")
+		return ErrTxAlreadyExists
 	}
 
 	p.txs[key] = tx
 	return nil
+}
+
+func (p *Pool) Has(txID blockchain.Hash) bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	_, ok := p.txs[txID.String()]
+	return ok
 }
 
 func (p *Pool) Remove(txID blockchain.Hash) {

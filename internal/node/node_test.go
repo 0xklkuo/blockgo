@@ -1,6 +1,8 @@
 package node
 
 import (
+	"io"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -10,6 +12,8 @@ import (
 )
 
 func TestTryProduceBlock(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+
 	validatorPub, validatorPriv, _ := blockcrypto.GenerateKeyPair()
 	receiverPub, _, _ := blockcrypto.GenerateKeyPair()
 
@@ -29,18 +33,20 @@ func TestTryProduceBlock(t *testing.T) {
 
 	cfg := config.NodeConfig{
 		NodeID:              "validator-1",
+		DataDir:             t.TempDir(),
+		ListenAddr:          "127.0.0.1:0",
 		BlockInterval:       1 * time.Second,
 		MaxTxPerBlock:       100,
 		LocalPrivateKey:     validatorPriv,
 		ValidatorPublicKeys: [][]byte{validatorPub},
 	}
 
-	n, err := New(cfg, genesis)
+	n, err := New(cfg, genesis, logger)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
+	defer func() { _ = n.Stop() }()
 
-	// Spend genesis allocation with fee 10
 	genesisTx := genesis.Transactions[0]
 	tx := blockchain.Transaction{
 		Inputs: []blockchain.TxInput{
