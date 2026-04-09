@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	DefaultBlockInterval = 5 * time.Second
-	DefaultMaxTxPerBlock = 1000
+	DefaultBlockInterval = 8 * time.Second
+	DefaultMaxTxPerBlock = 1024
 )
 
 type NodeConfig struct {

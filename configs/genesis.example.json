@@ -1,28 +1,24 @@
 {
   "chain_id": "blockgo-local",
-  "created_at_utc": "2026-04-01T00:00:00Z",
-  "block_interval_seconds": 5,
+  "created_at_utc": "2026-01-01T00:00:00Z",
+  "block_interval_seconds": 8,
   "validators": [
     {
-      "id": "validator1",
-      "public_key": "<validator1-public-key-hex>"
+      "id": "node1",
+      "public_key": "<validator-1-public-key-hex>"
     },
     {
-      "id": "validator2",
-      "public_key": "<validator2-public-key-hex>"
+      "id": "node2",
+      "public_key": "<validator-2-public-key-hex>"
     },
     {
-      "id": "validator3",
-      "public_key": "<validator3-public-key-hex>"
+      "id": "node3",
+      "public_key": "<validator-3-public-key-hex>"
     }
   ],
   "allocations": [
     {
-      "address": "<address-1>",
-      "value": 1000
-    },
-    {
-      "address": "<address-2>",
+      "address": "<funded-address-hex>",
       "value": 1000
     }
   ]

@@ -13,6 +13,7 @@ data/
 tmp/
 *.db
 *.bolt
+configs/local/*.json
 
 # Editor / OS
 .DS_Store

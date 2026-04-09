@@ -1,17 +1,19 @@
 {
-  "node_id": "validator1",
-  "data_dir": "./data/validator1",
+  "node_id": "node1",
+  "data_dir": "./data/node1",
   "listen_addr": "127.0.0.1:7001",
   "http_addr": "127.0.0.1:8001",
   "peers": [
     "127.0.0.1:7002",
     "127.0.0.1:7003"
   ],
-  "genesis_file": "./configs/genesis.example.json",
-  "validator": {
-    "enabled": true,
-    "private_key_file": "./configs/keys/validator1.ed25519"
-  },
-  "block_interval_seconds": 5,
-  "log_level": "info"
+  "genesis_file": "./configs/samples/genesis.sample.json",
+  "block_interval_seconds": 8,
+  "max_tx_per_block": 1024,
+  "private_key_hex": "<validator-private-key-hex>",
+  "validator_public_keys": [
+    "<validator-1-public-key-hex>",
+    "<validator-2-public-key-hex>",
+    "<validator-3-public-key-hex>"
+  ]
 }

@@ -1,0 +1,35 @@
+services:
+  node1:
+    build: .
+    command: [ "blockgo-node", "-config", "/app/configs/local/node1.json" ]
+    ports:
+      - "7001:7001"
+      - "8001:8001"
+    volumes:
+      - ./configs:/app/configs
+      - ./data/node1:/app/data/node1
+
+  node2:
+    build: .
+    command: [ "blockgo-node", "-config", "/app/configs/local/node2.json" ]
+    ports:
+      - "7002:7002"
+      - "8002:8002"
+    volumes:
+      - ./configs:/app/configs
+      - ./data/node2:/app/data/node2
+    depends_on:
+      - node1
+
+  node3:
+    build: .
+    command: [ "blockgo-node", "-config", "/app/configs/local/node3.json" ]
+    ports:
+      - "7003:7003"
+      - "8003:8003"
+    volumes:
+      - ./configs:/app/configs
+      - ./data/node3:/app/data/node3
+    depends_on:
+      - node1
+      - node2

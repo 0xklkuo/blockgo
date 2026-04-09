@@ -75,6 +75,55 @@ make run-cli
 make run-node
 ```
 
+### Local Multi-Node Demo
+
+#### 1. Generate Local Network Config
+##### Sample Config Files
+Tracked reference files are provided in:
+
+- `configs/samples/genesis.sample.json`
+- `configs/samples/node.sample.json`
+
+These are **examples only** and contain placeholder values.
+
+##### Runnable Local Demo Config
+To generate a runnable 3-node local network with real validator keys:
+
+```bash
+go run ./cmd/blockgo gen-localnet -out ./configs/local
+```
+
+This generates:
+- `configs/local/genesis.json`
+- `configs/local/node1.json`
+- `configs/local/node2.json`
+- `configs/local/node3.json`
+
+These generated files contain local demo private keys and should not be committed.
+
+#### 2. Start the Network
+```bash
+docker compose up --build
+```
+
+If `docker compose up --build` fails with a daemon connection error, ensure your Docker runtime is running first.
+
+Examples:
+- Docker Desktop must be started
+- OrbStack must be running
+
+#### 3. Check Node Health
+```bash
+curl http://localhost:8001/healthz
+curl http://localhost:8002/healthz
+curl http://localhost:8003/healthz
+```
+
+#### Notes
+- all nodes share the same `genesis.json`
+- validator keys and node configs are generated automatically
+- generated files are intended for local development/demo only
+
 ## Project Layout
 
 ```text
