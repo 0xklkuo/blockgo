@@ -2,11 +2,18 @@ name: ci
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - "**"
+    tags:
+      - "v*"
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   test:
+    name: Format, vet, test, and build
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +28,11 @@ jobs:
 
       - name: Verify formatting
         run: make fmt-check
+
+      - name: Verify module files are tidy
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
 
       - name: Vet
         run: make vet

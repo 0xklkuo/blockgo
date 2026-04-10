@@ -7,10 +7,10 @@
     "127.0.0.1:7002",
     "127.0.0.1:7003"
   ],
-  "genesis_file": "./configs/samples/genesis.sample.json",
+  "genesis_file": "./genesis.example.json",
   "block_interval_seconds": 8,
   "max_tx_per_block": 1024,
-  "private_key_hex": "<validator-private-key-hex>",
+  "private_key_hex": "<validator-1-private-key-hex>",
   "validator_public_keys": [
     "<validator-1-public-key-hex>",
     "<validator-2-public-key-hex>",

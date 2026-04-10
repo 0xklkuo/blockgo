@@ -1,12 +1,18 @@
 ## Summary
 
-Describe the change briefly.
+Describe the change in 1-3 short bullets.
+
+- 
+- 
+- 
 
 ## Why
 
-Why is this change needed?
+Explain the problem this PR solves and why this approach was chosen.
 
 ## Changes
+
+List the main code, docs, config, CI, or release-related updates.
 
 - 
 - 
@@ -14,16 +20,47 @@ Why is this change needed?
 
 ## Testing
 
-- [ ] `make test`
+Describe what you ran locally and the result.
+
+- [ ] `make fmt-check`
 - [ ] `make vet`
+- [ ] `make test`
 - [ ] `make build`
 
-## Docs
+Additional notes:
 
-- [ ] README updated if needed
-- [ ] docs/ updated if needed
-- [ ] config examples updated if needed
+- 
+
+## Release Readiness
+
+Confirm any release-facing impact.
+
+- [ ] No user-facing behavior changed
+- [ ] User-facing behavior changed and docs were updated
+- [ ] Config examples updated if needed
+- [ ] CI/workflows updated if needed
+- [ ] Docker or local demo flow updated if needed
+- [ ] Versioning or release notes impact reviewed
+
+## Documentation
+
+Check all docs touched by this change.
+
+- [ ] `README.md`
+- [ ] `docs/`
+- [ ] `CONTRIBUTING.md`
+- [ ] `configs/*.example.json`
+- [ ] CLI help text or command examples
+
+## Checklist
+
+- [ ] The change is minimal and focused
+- [ ] The code follows the project's simplicity and clarity goals
+- [ ] New behavior is covered by tests or justified if not tested
+- [ ] I considered edge cases and failure paths
+- [ ] I avoided unnecessary dependencies or abstraction
+- [ ] I would be comfortable maintaining this change later
 
 ## Notes
 
-Any follow-up work or limitations?
+Add follow-up work, limitations, or reviewer context if needed.

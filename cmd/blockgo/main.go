@@ -220,9 +220,27 @@ type localnetGenesis struct {
 	} `json:"allocations"`
 }
 
+const (
+	localnetDefaultOutDir        = "./configs/local"
+	localnetNodeCount            = 3
+	localnetChainID              = "blockgo-local"
+	localnetCreatedAtUTC         = "2026-01-01T00:00:00Z"
+	localnetBlockIntervalSeconds = 8
+	localnetMaxTxPerBlock        = 1024
+	localnetGenesisFileName      = "genesis.json"
+	localnetGenesisFilePath      = "/app/configs/local/genesis.json"
+	localnetDataDirPattern       = "/app/data/%s"
+	localnetListenAddrPattern    = "0.0.0.0:%d"
+	localnetNodeIDPattern        = "node%d"
+	localnetPeerAddrPattern      = "%s:%d"
+	localnetInitialAllocation    = 1000
+	localnetP2PPortBase          = 7000
+	localnetHTTPPortBase         = 8000
+)
+
 func runGenLocalnet(args []string) error {
 	fs := flag.NewFlagSet("gen-localnet", flag.ContinueOnError)
-	outDir := fs.String("out", "./configs/local", "output directory")
+	outDir := fs.String("out", localnetDefaultOutDir, "output directory")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -240,8 +258,8 @@ func runGenLocalnet(args []string) error {
 		HTTPPort int
 	}
 
-	validators := make([]validatorInfo, 0, 3)
-	for i := 1; i <= 3; i++ {
+	validators := make([]validatorInfo, 0, localnetNodeCount)
+	for i := 1; i <= localnetNodeCount; i++ {
 		pub, priv, err := blockcrypto.GenerateKeyPair()
 		if err != nil {
 			return err
@@ -253,12 +271,12 @@ func runGenLocalnet(args []string) error {
 		}
 
 		validators = append(validators, validatorInfo{
-			NodeID:   fmt.Sprintf("node%d", i),
+			NodeID:   fmt.Sprintf(localnetNodeIDPattern, i),
 			Pub:      pub,
 			Priv:     priv,
 			Address:  addr.String(),
-			P2PPort:  7000 + i,
-			HTTPPort: 8000 + i,
+			P2PPort:  localnetP2PPortBase + i,
+			HTTPPort: localnetHTTPPortBase + i,
 		})
 	}
 
@@ -268,9 +286,9 @@ func runGenLocalnet(args []string) error {
 	}
 
 	genesis := localnetGenesis{
-		ChainID:              "blockgo-local",
-		CreatedAtUTC:         "2026-01-01T00:00:00Z",
-		BlockIntervalSeconds: 8,
+		ChainID:              localnetChainID,
+		CreatedAtUTC:         localnetCreatedAtUTC,
+		BlockIntervalSeconds: localnetBlockIntervalSeconds,
 	}
 	for _, v := range validators {
 		genesis.Validators = append(genesis.Validators, struct {
@@ -286,10 +304,10 @@ func runGenLocalnet(args []string) error {
 		Value   uint64 `json:"value"`
 	}{
 		Address: validators[0].Address,
-		Value:   1000,
+		Value:   localnetInitialAllocation,
 	})
 
-	if err := writeJSONFile(filepath.Join(*outDir, "genesis.json"), genesis); err != nil {
+	if err := writeJSONFile(filepath.Join(*outDir, localnetGenesisFileName), genesis); err != nil {
 		return err
 	}
 
@@ -299,18 +317,18 @@ func runGenLocalnet(args []string) error {
 			if other.NodeID == v.NodeID {
 				continue
 			}
-			peers = append(peers, fmt.Sprintf("%s:%d", other.NodeID, other.P2PPort))
+			peers = append(peers, fmt.Sprintf(localnetPeerAddrPattern, other.NodeID, other.P2PPort))
 		}
 
 		cfg := localnetNodeConfig{
 			NodeID:               v.NodeID,
-			DataDir:              fmt.Sprintf("/app/data/%s", v.NodeID),
-			ListenAddr:           fmt.Sprintf("0.0.0.0:%d", v.P2PPort),
-			HTTPAddr:             fmt.Sprintf("0.0.0.0:%d", v.HTTPPort),
+			DataDir:              fmt.Sprintf(localnetDataDirPattern, v.NodeID),
+			ListenAddr:           fmt.Sprintf(localnetListenAddrPattern, v.P2PPort),
+			HTTPAddr:             fmt.Sprintf(localnetListenAddrPattern, v.HTTPPort),
 			Peers:                peers,
-			GenesisFile:          "/app/configs/local/genesis.json",
-			BlockIntervalSeconds: 8,
-			MaxTxPerBlock:        1024,
+			GenesisFile:          localnetGenesisFilePath,
+			BlockIntervalSeconds: localnetBlockIntervalSeconds,
+			MaxTxPerBlock:        localnetMaxTxPerBlock,
 			PrivateKeyHex:        hex.EncodeToString(v.Priv),
 			ValidatorPublicKeys:  validatorPubKeys,
 		}

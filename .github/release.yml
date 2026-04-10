@@ -1,0 +1,43 @@
+changelog:
+  categories:
+    - title: Breaking Changes
+      labels:
+        - breaking-change
+
+    - title: Features
+      labels:
+        - feat
+        - feature
+        - enhancement
+
+    - title: Fixes
+      labels:
+        - fix
+        - bug
+        - bugfix
+
+    - title: Documentation
+      labels:
+        - docs
+        - documentation
+
+    - title: Tests
+      labels:
+        - test
+        - tests
+
+    - title: CI and Build
+      labels:
+        - ci
+        - build
+        - chore
+
+    - title: Other Changes
+      labels:
+        - "*"
+
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot

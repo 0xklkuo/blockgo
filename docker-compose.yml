@@ -1,7 +1,7 @@
 services:
   node1:
     build: .
-    command: [ "blockgo-node", "-config", "/app/configs/local/node1.json" ]
+    command: [ "-config", "/app/configs/local/node1.json" ]
     ports:
       - "7001:7001"
       - "8001:8001"
@@ -11,7 +11,7 @@ services:
 
   node2:
     build: .
-    command: [ "blockgo-node", "-config", "/app/configs/local/node2.json" ]
+    command: [ "-config", "/app/configs/local/node2.json" ]
     ports:
       - "7002:7002"
       - "8002:8002"
@@ -23,7 +23,7 @@ services:
 
   node3:
     build: .
-    command: [ "blockgo-node", "-config", "/app/configs/local/node3.json" ]
+    command: [ "-config", "/app/configs/local/node3.json" ]
     ports:
       - "7003:7003"
       - "8003:8003"

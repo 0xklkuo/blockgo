@@ -10,9 +10,11 @@ LDFLAGS := -X 'blockgo/internal/version.Version=$(VERSION)' \
            -X 'blockgo/internal/version.Commit=$(COMMIT)' \
            -X 'blockgo/internal/version.Date=$(DATE)'
 
-.PHONY: build build-cli build-node fmt fmt-check vet test tidy clean ci run-cli run-node
+.PHONY: build build-cli build-node build-release build-release-cli build-release-node fmt fmt-check vet test tidy clean ci run-cli run-node release-check
 
 build: build-cli build-node
+
+build-release: build-release-cli build-release-node
 
 build-cli:
 	mkdir -p $(BIN_DIR)
@@ -21,6 +23,14 @@ build-cli:
 build-node:
 	mkdir -p $(BIN_DIR)
 	go build -trimpath -ldflags "$(LDFLAGS)" -o $(BIN_DIR)/$(APP_NODE) ./cmd/blockgo-node
+
+build-release-cli:
+	mkdir -p $(BIN_DIR)
+	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS) -s -w" -o $(BIN_DIR)/$(APP_CLI) ./cmd/blockgo
+
+build-release-node:
+	mkdir -p $(BIN_DIR)
+	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS) -s -w" -o $(BIN_DIR)/$(APP_NODE) ./cmd/blockgo-node
 
 fmt:
 	gofmt -w .
@@ -46,6 +56,8 @@ clean:
 	rm -rf $(BIN_DIR)
 
 ci: fmt-check vet test build
+
+release-check: fmt-check vet test build-release
 
 run-cli:
 	go run ./cmd/blockgo version

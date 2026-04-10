@@ -11,6 +11,15 @@ import (
 	blockcrypto "blockgo/internal/crypto"
 )
 
+const (
+	contentTypeJSON        = "application/json"
+	healthStatusOK         = "ok"
+	routeHealth            = "GET /healthz"
+	routeChainHead         = "GET /v1/chain/head"
+	routeMempool           = "GET /v1/mempool"
+	routeSubmitTransaction = "POST /v1/transactions"
+)
+
 type NodeAPI interface {
 	Head() *blockchain.Block
 	MempoolLen() int
@@ -59,15 +68,15 @@ func (s *Server) Handler() http.Handler {
 }
 
 func (s *Server) routes() {
-	s.mux.HandleFunc("GET /healthz", s.handleHealth)
-	s.mux.HandleFunc("GET /v1/chain/head", s.handleHead)
-	s.mux.HandleFunc("GET /v1/mempool", s.handleMempool)
-	s.mux.HandleFunc("POST /v1/transactions", s.handleSubmitTransaction)
+	s.mux.HandleFunc(routeHealth, s.handleHealth)
+	s.mux.HandleFunc(routeChainHead, s.handleHead)
+	s.mux.HandleFunc(routeMempool, s.handleMempool)
+	s.mux.HandleFunc(routeSubmitTransaction, s.handleSubmitTransaction)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, healthResponse{
-		Status: "ok",
+		Status: healthStatusOK,
 	})
 }
 
@@ -175,7 +184,7 @@ func decodeTransactionRequest(req submitTransactionRequest) (blockchain.Transact
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
