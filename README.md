@@ -1,3 +1,5 @@
+[![CI](https://github.com/0xklkuo/blockgo/actions/workflows/ci.yml/badge.svg)](https://github.com/0xklkuo/blockgo/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/0xklkuo/blockgo?label=release&sort=semver)](https://github.com/0xklkuo/blockgo/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE) [![Go version](https://img.shields.io/badge/go-1.24.10-blue.svg)](https://go.dev/)
+
 # BlockGo
 
 A minimal, open-source, educational blockchain project in Go.
@@ -333,6 +335,59 @@ For the full release workflow, release checklist, and versioning guidance, see [
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 If behavior changes, please also update the relevant docs and examples.
+
+## Release v0.1.0 Notes
+
+Summary
+- This is the first educational release of BlockGo (v0.1.0). It packages the repository in a reproducible way and documents the verified local demo flow.
+- Focus: documentation, CI/workflow polish, reproducible release artifacts, and clear contributor guidance.
+
+Highlights
+- Finalized Milestone 7: repository is release-ready and includes:
+  - core blockchain types (blocks, transactions, UTXO)
+  - transaction signing and validation
+  - PoA consensus with fixed validators and deterministic proposer selection
+  - bbolt-backed persistence
+  - minimal TCP P2P sync with static peers
+  - CLI tools for key generation, address derivation, tx creation, and localnet generation
+  - optional HTTP API for health, head inspection, mempool, and transaction submission
+  - Docker Compose local 3-node demo
+  - CI checks and release automation (tag-triggered)
+
+Validation Performed
+- Repository checks: `make fmt-check`, `make vet`, `make test`, `make build`, `make ci` — all passing in maintainer validation.
+- Local demo:
+  - `go run ./cmd/blockgo gen-localnet -out ./configs/local` — generates demo configs
+  - `docker compose up --build` — successfully starts three local nodes
+  - `curl http://localhost:8001/healthz` (and ports 8002/8003) — returns healthy responses
+- Release packaging:
+  - release-style builds and packaging validated locally with `make release-check`
+
+Known limitations (kept intentionally)
+- Fixed validator set (Proof of Authority); no dynamic membership.
+- Static peer configuration; no discovery protocol.
+- Educational scope: not hardened for adversarial public networks.
+- Minimal HTTP API focused on inspection and basic tx submission only.
+- No smart contracts / VM, no advanced fork choice/finality gadgetry.
+
+How to reproduce the release locally
+1. Run repository checks:
+   - `make fmt-check && make vet && make test && make build`
+2. Generate local demo config:
+   - `go run ./cmd/blockgo gen-localnet -out ./configs/local`
+3. Start demo:
+   - `docker compose up --build`
+4. Verify nodes:
+   - `curl http://localhost:8001/healthz`
+5. Build release binaries:
+   - `make release-check`
+6. Tag and push:
+   - `git tag -a v0.1.0 -m "Release v0.1.0"`
+   - `git push origin v0.1.0`
+
+Release assets (automated on tag)
+- Platform build archives for common platforms (linux/darwin, amd64/arm64)
+- Included files: `blockgo`, `blockgo-node`, `README.md`, `LICENSE`
 
 ## License
 
