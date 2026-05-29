@@ -103,7 +103,7 @@ After building, the CLI binary is available at `./bin/blockgo`.
 - `blockgo gen-key`
 - `blockgo address -pubkey <hex>`
 - `blockgo create-tx ...`
-- `blockgo gen-localnet -out <dir>`
+- `blockgo gen-localnet [-mode docker|local] [-nodes n] -out <dir>`
 
 ### Generate a Key Pair
 
@@ -141,27 +141,39 @@ Example with a change output:
 
 ## Run a Single Node
 
-Use the tracked example configs as templates:
+The quickest runnable local path is:
+
+```bash
+make run-node
+```
+
+That target generates a dedicated single-node local development config in `configs/run-node` and starts `node1` with:
+
+- loopback listen addresses such as `127.0.0.1:7001`
+- a local genesis file at `configs/run-node/genesis.json`
+- an isolated local data directory under `data/run-node/`
+- generated validator keys for local development only
+
+You can generate the same local config explicitly with:
+
+```bash
+go run ./cmd/blockgo gen-localnet -mode local -nodes 1 -out ./configs/run-node
+./bin/blockgo-node -config ./configs/run-node/node1.json
+```
+
+Tracked example configs are still available as templates:
 
 - `configs/genesis.example.json`
 - `configs/node.example.json`
 
-These files are not runnable as committed because they intentionally contain placeholder keys and addresses. Replace the placeholders with real values before using them directly.
-
-Run the node after filling in the example config:
-
-```bash
-./bin/blockgo-node -config ./configs/node.example.json
-```
-
-If you want a runnable setup without manual key editing, use the generated local config flow in the multi-node demo and point the node at one of the generated files such as `configs/local/node1.json`.
+These tracked example files intentionally contain placeholder keys and addresses. Fill them in before using them directly.
 
 ## Local Multi-Node Demo
 
-### 1. Generate local config
+### 1. Generate Docker demo config
 
 ```bash
-go run ./cmd/blockgo gen-localnet -out ./configs/local
+go run ./cmd/blockgo gen-localnet -mode docker -nodes 3 -out ./configs/local
 ```
 
 This creates:
@@ -171,7 +183,7 @@ This creates:
 - `configs/local/node2.json`
 - `configs/local/node3.json`
 
-These generated files contain local demo private keys and should not be committed.
+These generated files contain local demo private keys and should not be committed. Docker mode is the default and produces Compose-oriented addresses such as `node2:7002` and `/app/configs/local/genesis.json`.
 
 ### 2. Start the network
 
@@ -355,11 +367,10 @@ Useful local commands:
 
 ```bash
 make run-cli
-go run ./cmd/blockgo gen-localnet -out ./configs/local
+make run-node
+go run ./cmd/blockgo gen-localnet -mode docker -nodes 3 -out ./configs/local
 docker compose up --build
 ```
-
-Use `make run-node` only after replacing the placeholder values in `configs/node.example.json`.
 
 ## License
 

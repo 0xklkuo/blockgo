@@ -56,7 +56,7 @@ Commands:
   gen-key
   address -pubkey <hex>
   create-tx -in-prev-tx <hex> -in-index <n> -in-pubkey <hex> -in-privkey <hex> -out-address <hex> -out-value <n> [-change-address <hex> -change-value <n>]
-  gen-localnet -out <dir>
+  gen-localnet [-mode docker|local] [-nodes n] -out <dir>
 `, version.Name)
 }
 
@@ -221,27 +221,57 @@ type localnetGenesis struct {
 }
 
 const (
-	localnetDefaultOutDir        = "./configs/local"
-	localnetNodeCount            = 3
-	localnetChainID              = "blockgo-local"
-	localnetCreatedAtUTC         = "2026-01-01T00:00:00Z"
-	localnetBlockIntervalSeconds = 8
-	localnetMaxTxPerBlock        = 1024
-	localnetGenesisFileName      = "genesis.json"
-	localnetGenesisFilePath      = "/app/configs/local/genesis.json"
-	localnetDataDirPattern       = "/app/data/%s"
-	localnetListenAddrPattern    = "0.0.0.0:%d"
-	localnetNodeIDPattern        = "node%d"
-	localnetPeerAddrPattern      = "%s:%d"
-	localnetInitialAllocation    = 1000
-	localnetP2PPortBase          = 7000
-	localnetHTTPPortBase         = 8000
+	localnetDefaultOutDir           = "./configs/local"
+	localnetDefaultNodeCount        = 3
+	localnetChainID                 = "blockgo-local"
+	localnetCreatedAtUTC            = "2026-01-01T00:00:00Z"
+	localnetBlockIntervalSeconds    = 8
+	localnetMaxTxPerBlock           = 1024
+	localnetGenesisFileName         = "genesis.json"
+	localnetNodeIDPattern           = "node%d"
+	localnetInitialAllocation       = 1000
+	localnetP2PPortBase             = 7000
+	localnetHTTPPortBase            = 8000
+	localnetModeDocker              = "docker"
+	localnetModeLocal               = "local"
+	localnetDockerGenesisFilePath   = "/app/configs/local/genesis.json"
+	localnetDockerDataDirPattern    = "/app/data/%s"
+	localnetDockerListenAddrPattern = "0.0.0.0:%d"
+	localnetLocalGenesisFilePath    = "./genesis.json"
+	localnetLocalDataDirPattern     = "./data/run-node/%s"
+	localnetLocalListenAddrPattern  = "127.0.0.1:%d"
 )
+
+type validatorInfo struct {
+	NodeID   string
+	Pub      []byte
+	Priv     []byte
+	Address  string
+	P2PPort  int
+	HTTPPort int
+}
+
+type localnetProfile struct {
+	dataDirPattern    string
+	genesisFile       string
+	listenAddrPattern string
+	peerAddr          func(nodeID string, p2pPort int) string
+}
 
 func runGenLocalnet(args []string) error {
 	fs := flag.NewFlagSet("gen-localnet", flag.ContinueOnError)
+	mode := fs.String("mode", localnetModeDocker, "config mode: docker or local")
+	nodeCount := fs.Int("nodes", localnetDefaultNodeCount, "number of validator nodes to generate")
 	outDir := fs.String("out", localnetDefaultOutDir, "output directory")
 	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *nodeCount <= 0 {
+		return fmt.Errorf("-nodes must be greater than zero")
+	}
+
+	profile, err := getLocalnetProfile(*mode)
+	if err != nil {
 		return err
 	}
 
@@ -249,17 +279,8 @@ func runGenLocalnet(args []string) error {
 		return err
 	}
 
-	type validatorInfo struct {
-		NodeID   string
-		Pub      []byte
-		Priv     []byte
-		Address  string
-		P2PPort  int
-		HTTPPort int
-	}
-
-	validators := make([]validatorInfo, 0, localnetNodeCount)
-	for i := 1; i <= localnetNodeCount; i++ {
+	validators := make([]validatorInfo, 0, *nodeCount)
+	for i := 1; i <= *nodeCount; i++ {
 		pub, priv, err := blockcrypto.GenerateKeyPair()
 		if err != nil {
 			return err
@@ -317,16 +338,16 @@ func runGenLocalnet(args []string) error {
 			if other.NodeID == v.NodeID {
 				continue
 			}
-			peers = append(peers, fmt.Sprintf(localnetPeerAddrPattern, other.NodeID, other.P2PPort))
+			peers = append(peers, profile.peerAddr(other.NodeID, other.P2PPort))
 		}
 
 		cfg := localnetNodeConfig{
 			NodeID:               v.NodeID,
-			DataDir:              fmt.Sprintf(localnetDataDirPattern, v.NodeID),
-			ListenAddr:           fmt.Sprintf(localnetListenAddrPattern, v.P2PPort),
-			HTTPAddr:             fmt.Sprintf(localnetListenAddrPattern, v.HTTPPort),
+			DataDir:              fmt.Sprintf(profile.dataDirPattern, v.NodeID),
+			ListenAddr:           fmt.Sprintf(profile.listenAddrPattern, v.P2PPort),
+			HTTPAddr:             fmt.Sprintf(profile.listenAddrPattern, v.HTTPPort),
 			Peers:                peers,
-			GenesisFile:          localnetGenesisFilePath,
+			GenesisFile:          profile.genesisFile,
 			BlockIntervalSeconds: localnetBlockIntervalSeconds,
 			MaxTxPerBlock:        localnetMaxTxPerBlock,
 			PrivateKeyHex:        hex.EncodeToString(v.Priv),
@@ -338,8 +359,33 @@ func runGenLocalnet(args []string) error {
 		}
 	}
 
-	fmt.Printf("generated localnet config in %s\n", *outDir)
+	fmt.Printf("generated %s localnet config in %s\n", *mode, *outDir)
 	return nil
+}
+
+func getLocalnetProfile(mode string) (localnetProfile, error) {
+	switch mode {
+	case localnetModeDocker:
+		return localnetProfile{
+			dataDirPattern:    localnetDockerDataDirPattern,
+			genesisFile:       localnetDockerGenesisFilePath,
+			listenAddrPattern: localnetDockerListenAddrPattern,
+			peerAddr: func(nodeID string, p2pPort int) string {
+				return fmt.Sprintf("%s:%d", nodeID, p2pPort)
+			},
+		}, nil
+	case localnetModeLocal:
+		return localnetProfile{
+			dataDirPattern:    localnetLocalDataDirPattern,
+			genesisFile:       localnetLocalGenesisFilePath,
+			listenAddrPattern: localnetLocalListenAddrPattern,
+			peerAddr: func(_ string, p2pPort int) string {
+				return fmt.Sprintf("127.0.0.1:%d", p2pPort)
+			},
+		}, nil
+	default:
+		return localnetProfile{}, fmt.Errorf("invalid localnet mode %q: want %q or %q", mode, localnetModeDocker, localnetModeLocal)
+	}
 }
 
 func writeJSONFile(path string, v any) error {

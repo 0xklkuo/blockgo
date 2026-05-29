@@ -179,10 +179,10 @@ Tracked examples:
 - `configs/node.example.json`
 - `configs/genesis.example.json`
 
-For a runnable local demo, generate config files with:
+For generated local config files, use:
 
 ```bash
-go run ./cmd/blockgo gen-localnet -out ./configs/local
+go run ./cmd/blockgo gen-localnet [-mode docker|local] [-nodes n] -out ./configs/local
 ```
 
 That command creates:
@@ -193,6 +193,12 @@ That command creates:
 - `configs/local/node3.json`
 
 These generated files are for local development only and include demo private keys.
+
+Generation modes:
+
+- `docker` is the default and emits Compose-oriented addresses such as `node2:7002` and `/app/configs/local/genesis.json`
+- `local` emits loopback addresses such as `127.0.0.1:7001`, an isolated data directory under `data/run-node/`, and a config-relative genesis path so the generated node config can be used directly for local development
+- `-nodes` controls how many validator configs are emitted; `make run-node` uses `-nodes 1`, while the Docker demo uses `-nodes 3`
 
 ### Node Configuration
 
@@ -407,16 +413,25 @@ Error response shape:
 }
 ```
 
+Request handling rules:
+
+- the request body must contain exactly one JSON object
+- unknown JSON fields are rejected
+- oversized request bodies are rejected before transaction decoding
+- valid JSON is decoded before transaction-level validation runs
+
 ## Local Demo Workflow
 
-The intended local demo flow is:
+The intended Docker demo flow is:
 
-1. generate local config files
+1. generate Docker-oriented config files with `go run ./cmd/blockgo gen-localnet -mode docker -nodes 3 -out ./configs/local`
 2. start three nodes with Docker Compose
 3. inspect health endpoints
 4. submit transactions and observe block production
 
-This keeps the onboarding path short while still demonstrating multi-node behavior.
+For a single local node without Docker, use `make run-node` or generate local-mode config with `go run ./cmd/blockgo gen-localnet -mode local -nodes 1 -out ./configs/run-node` and start `configs/run-node/node1.json` directly.
+
+This keeps the onboarding path short while still demonstrating both local and multi-node behavior.
 
 ## Known Limits
 

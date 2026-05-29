@@ -1,0 +1,17 @@
+{
+  "chain_id": "blockgo-local",
+  "created_at_utc": "2026-01-01T00:00:00Z",
+  "block_interval_seconds": 8,
+  "validators": [
+    {
+      "id": "node1",
+      "public_key": "5f9ca43ea3c6335769aa409d65f6ad2426e8e120602cd3eaf42f81201f95ee28"
+    }
+  ],
+  "allocations": [
+    {
+      "address": "3a02cd758d786e6ddd1cf7ae54884e2ec2c9037c0fce667b8944f3ccf0feda6f",
+      "value": 1000
+    }
+  ]
+}

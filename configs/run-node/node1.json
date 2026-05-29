@@ -1,0 +1,14 @@
+{
+  "node_id": "node1",
+  "data_dir": "./data/run-node/node1",
+  "listen_addr": "127.0.0.1:7001",
+  "http_addr": "127.0.0.1:8001",
+  "peers": [],
+  "genesis_file": "./genesis.json",
+  "block_interval_seconds": 8,
+  "max_tx_per_block": 1024,
+  "private_key_hex": "a58561c28b7e61d1b73420aba1fcebef170f1a92d4cfc20d70070da59fe1430a5f9ca43ea3c6335769aa409d65f6ad2426e8e120602cd3eaf42f81201f95ee28",
+  "validator_public_keys": [
+    "5f9ca43ea3c6335769aa409d65f6ad2426e8e120602cd3eaf42f81201f95ee28"
+  ]
+}

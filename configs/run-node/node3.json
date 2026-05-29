@@ -1,0 +1,19 @@
+{
+  "node_id": "node3",
+  "data_dir": "./data/run-node/node3",
+  "listen_addr": "127.0.0.1:7003",
+  "http_addr": "127.0.0.1:8003",
+  "peers": [
+    "127.0.0.1:7001",
+    "127.0.0.1:7002"
+  ],
+  "genesis_file": "./genesis.json",
+  "block_interval_seconds": 8,
+  "max_tx_per_block": 1024,
+  "private_key_hex": "8770161c9d915168ecabaebd98449fb541f166f39e561bb2ab01a214679e8dba32e56dbf201c3a3610df321e16f0a9bf447a7fd496dee1f69bc2bf05c73b9d5a",
+  "validator_public_keys": [
+    "d8842533abd0d73565e6410cc83acb00145244735849dfff294431c470eb0a08",
+    "bb0bafa77263273796ddb3623de9e74d8f50cfe11ea2aa54723c9fec1a945ba7",
+    "32e56dbf201c3a3610df321e16f0a9bf447a7fd496dee1f69bc2bf05c73b9d5a"
+  ]
+}

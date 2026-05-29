@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -12,12 +13,13 @@ import (
 )
 
 const (
-	contentTypeJSON        = "application/json"
-	healthStatusOK         = "ok"
-	routeHealth            = "GET /healthz"
-	routeChainHead         = "GET /v1/chain/head"
-	routeMempool           = "GET /v1/mempool"
-	routeSubmitTransaction = "POST /v1/transactions"
+	contentTypeJSON            = "application/json"
+	healthStatusOK             = "ok"
+	routeHealth                = "GET /healthz"
+	routeChainHead             = "GET /v1/chain/head"
+	routeMempool               = "GET /v1/mempool"
+	routeSubmitTransaction     = "POST /v1/transactions"
+	maxTransactionRequestBytes = 1 << 20
 )
 
 type NodeAPI interface {
@@ -104,8 +106,8 @@ type submitTransactionRequest struct {
 }
 
 func (s *Server) handleSubmitTransaction(w http.ResponseWriter, r *http.Request) {
-	var req submitTransactionRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	req, err := decodeSubmitTransactionRequest(w, r)
+	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
@@ -124,6 +126,28 @@ func (s *Server) handleSubmitTransaction(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusAccepted, submitTransactionResponse{
 		TxID: tx.ID.String(),
 	})
+}
+
+func decodeSubmitTransactionRequest(w http.ResponseWriter, r *http.Request) (submitTransactionRequest, error) {
+	var req submitTransactionRequest
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxTransactionRequestBytes)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+
+	if err := dec.Decode(&req); err != nil {
+		return req, err
+	}
+
+	var extra struct{}
+	if err := dec.Decode(&extra); err != io.EOF {
+		if err == nil {
+			return req, errors.New("request body must contain a single JSON object")
+		}
+		return req, err
+	}
+
+	return req, nil
 }
 
 func decodeTransactionRequest(req submitTransactionRequest) (blockchain.Transaction, error) {

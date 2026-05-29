@@ -9,11 +9,19 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"blockgo/internal/api"
 	"blockgo/internal/config"
 	"blockgo/internal/node"
 	"blockgo/internal/version"
+)
+
+const (
+	httpReadHeaderTimeout = 5 * time.Second
+	httpReadTimeout       = 10 * time.Second
+	httpWriteTimeout      = 10 * time.Second
+	httpIdleTimeout       = 60 * time.Second
 )
 
 func main() {
@@ -65,8 +73,12 @@ func main() {
 	if cfg.HTTPAddr != "" {
 		apiServer := api.NewServer(logger, n)
 		httpServer = &http.Server{
-			Addr:    cfg.HTTPAddr,
-			Handler: apiServer.Handler(),
+			Addr:              cfg.HTTPAddr,
+			Handler:           apiServer.Handler(),
+			ReadHeaderTimeout: httpReadHeaderTimeout,
+			ReadTimeout:       httpReadTimeout,
+			WriteTimeout:      httpWriteTimeout,
+			IdleTimeout:       httpIdleTimeout,
 		}
 
 		go func() {

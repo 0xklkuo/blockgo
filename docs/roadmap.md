@@ -59,6 +59,78 @@ Future doc work should preserve this structure unless there is a strong reason t
 - **M6**: CLI, optional HTTP API, Docker Compose
 - **M7**: OSS polish, integration alignment, release-ready repository
 
+## Refactor Continuation Plan
+
+This refactor is intentionally split into small milestones so a future agent can continue the work without reconstructing prior context.
+
+### Refactor Milestone 1 — documentation consolidation
+
+Status: completed.
+
+Scope:
+
+- keep the repository centered on `README.md`, `docs/spec.md`, `docs/architecture.md`, and `docs/roadmap.md`
+- migrate durable guidance out of redundant standalone docs
+- remove stale or duplicated long-lived docs
+- align the README with actual repository behavior
+
+Completion notes:
+
+- removed `docs/config.md`, `docs/release.md`, `CONTRIBUTING.md`, and `CODE_OF_CONDUCT.md`
+- moved durable contribution, conduct, and release guidance into the core docs
+- clarified that tracked example node configs are templates, not runnable as committed
+
+Validation target:
+
+- diagnostics clean
+- `make fmt`
+- `make ci`
+
+### Refactor Milestone 2 — runtime hardening and local developer flow
+
+Status: next.
+
+Scope:
+
+- make `make run-node` work without manual placeholder editing
+- keep the Docker localnet flow working as documented
+- add focused tests for the local config generation path
+- harden HTTP server defaults with explicit timeouts
+- harden `POST /v1/transactions` request decoding
+- add focused API tests for accepted and rejected request shapes
+
+Acceptance criteria:
+
+- `make run-node` starts from a generated local config instead of failing on placeholder values
+- Docker-oriented config generation still works for the Compose demo
+- malformed, oversized, or unknown-field transaction requests are rejected predictably
+- `make test` and `make ci` pass
+
+Estimated effort:
+
+- 2 to 4 senior-engineer hours
+
+### Refactor Milestone 3 — CI and release workflow cleanup
+
+Status: planned.
+
+Scope:
+
+- reduce redundant validation work in the release workflow
+- keep local and CI build flags aligned where practical
+- review release discoverability and final documentation polish
+- do a final pass on repository clarity, maintainability, and agent handoff quality
+
+Acceptance criteria:
+
+- release automation is easier to understand and avoids obvious duplicated work
+- docs still match the final workflow
+- `make ci` remains the main local validation command
+
+Estimated effort:
+
+- 1 to 2 senior-engineer hours
+
 ## Near-Term Improvements
 
 Good next improvements for the current scope include:

@@ -63,4 +63,5 @@ run-cli:
 	go run ./cmd/blockgo version
 
 run-node:
-	go run ./cmd/blockgo-node -config ./configs/node.example.json
+	go run ./cmd/blockgo gen-localnet -mode local -nodes 1 -out ./configs/run-node
+	go run ./cmd/blockgo-node -config ./configs/run-node/node1.json
