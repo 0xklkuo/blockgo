@@ -2,15 +2,20 @@
 
 # BlockGo
 
-A minimal, open-source, educational blockchain project in Go.
+BlockGo is a minimal, open-source, educational blockchain project in Go.
 
-BlockGo is built to help developers learn the fundamentals of the Go ecosystem and modern blockchain development by implementing a small but real blockchain from scratch. The project favors explicit design, small packages, minimal dependencies, and contributor-friendly code over framework-heavy abstraction or production-scale complexity.
+It is designed to teach core blockchain and Go concepts through a small but real implementation: UTXO state, signed transactions, signed blocks, fixed-validator Proof of Authority, local persistence, basic peer sync, a tiny HTTP API, and a runnable multi-node demo.
 
-## Status
+## Goals
 
-**Milestone 7**: OSS polish and release-ready repository.
+- keep the codebase small, readable, and teachable
+- prefer explicit design over framework-heavy abstraction
+- demonstrate realistic node-to-node behavior without hiding the moving parts
+- keep dependencies minimal and contributor workflow simple
 
-The codebase now includes:
+## Current Scope
+
+BlockGo currently includes:
 
 - core blockchain data structures
 - transaction hashing and signing
@@ -23,55 +28,35 @@ The codebase now includes:
 - CLI utilities
 - optional HTTP API
 - Docker Compose local multi-node demo
-- OSS contributor scaffolding and CI
+- CI and release automation
 
-## Goals
+### Non-Goals
 
-- Teach core Go ecosystem practices through a real project
-- Teach blockchain fundamentals by building a minimal serious prototype
-- Stay small, readable, and easy to contribute to
-- Prefer explicit design over framework-heavy abstraction
-- Use real node-to-node networking, but keep the protocol understandable
-
-## Non-Goals for MVP
+The current project intentionally does not include:
 
 - Proof of Work
 - full Proof of Stake
-- smart contracts / VM
-- Merkle Patricia Trie
+- smart contracts or a VM
 - dynamic peer discovery
 - dynamic validator set changes
-- advanced production hardening
-- anti-abuse and adversarial networking defenses
+- advanced fork choice or finality gadgets
+- hostile-network hardening
+- production-scale performance tuning
 
-## Locked MVP Decisions
+### Locked Design Decisions
 
 - **Ledger model:** UTXO
-- **Consensus:** Proof of Authority (fixed validator set, round-robin proposer)
-- **P2P:** custom minimal TCP protocol with static peers
+- **Consensus:** Proof of Authority with a fixed validator set and deterministic proposer selection
+- **P2P:** small custom TCP protocol with static peers
 - **Storage:** bbolt
-- **Crypto:** ed25519 + sha256
-- **Approach:** stdlib-first, minimal dependencies
+- **Crypto:** ed25519 for signatures and sha256 for hashing
+- **Approach:** stdlib-first and minimal dependencies
 
-## Why This Design
-
-This project is intentionally not a clone of Bitcoin or Ethereum internals.
-
-Instead, it aims to teach:
-
-- block structure
-- transaction validation
-- UTXO spending rules
-- signed blocks
-- peer synchronization
-- persistence
-- clean Go project structure
-
-Without dragging in complexity that would obscure the fundamentals.
+For the exact behavior and contracts, see [`docs/spec.md`](./docs/spec.md).
 
 ## Requirements
 
-- Go 1.24.10
+- Go `1.24.10`
 - Make
 - Docker and Docker Compose for the local multi-node demo
 
@@ -104,7 +89,7 @@ make run-cli
 ### Show Node Version
 
 ```bash
-blockgo-node -version
+./bin/blockgo-node -version
 ```
 
 ## CLI Overview
@@ -128,7 +113,7 @@ After building, the CLI binary is available at `./bin/blockgo`.
 
 Example output:
 
-```bash
+```json
 {
   "public_key_hex": "<hex>",
   "private_key_hex": "<hex>",
@@ -148,7 +133,7 @@ Example output:
 ./bin/blockgo create-tx -in-prev-tx <tx-id-hex> -in-index 0 -in-pubkey <public-key-hex> -in-privkey <private-key-hex> -out-address <recipient-address-hex> -out-value 100
 ```
 
-If you need to change the output:
+Example with a change output:
 
 ```bash
 ./bin/blockgo create-tx -in-prev-tx <tx-id-hex> -in-index 0 -in-pubkey <public-key-hex> -in-privkey <private-key-hex> -out-address <recipient-address-hex> -out-value 100 -change-address <change-address-hex> -change-value 900
@@ -156,24 +141,24 @@ If you need to change the output:
 
 ## Run a Single Node
 
-Use the example config files as a starting point:
+Use the tracked example configs as templates:
 
 - `configs/genesis.example.json`
 - `configs/node.example.json`
 
-Run the node:
+These files are not runnable as committed because they intentionally contain placeholder keys and addresses. Replace the placeholders with real values before using them directly.
+
+Run the node after filling in the example config:
 
 ```bash
 ./bin/blockgo-node -config ./configs/node.example.json
 ```
 
+If you want a runnable setup without manual key editing, use the generated local config flow in the multi-node demo and point the node at one of the generated files such as `configs/local/node1.json`.
+
 ## Local Multi-Node Demo
 
-This repository includes a simple 3-node local demo using Docker Compose.
-
-### 1. Generate Local Network Config
-
-Generate a runnable local network with validator keys:
+### 1. Generate local config
 
 ```bash
 go run ./cmd/blockgo gen-localnet -out ./configs/local
@@ -188,15 +173,13 @@ This creates:
 
 These generated files contain local demo private keys and should not be committed.
 
-### 2. Start the Network
+### 2. Start the network
 
 ```bash
 docker compose up --build
 ```
 
-Refer to the official Docker Compose documentation for more details: https://docs.docker.com/compose/
-
-### 3. Check Node Health
+### 3. Check node health
 
 ```bash
 curl http://localhost:8001/healthz
@@ -204,13 +187,13 @@ curl http://localhost:8002/healthz
 curl http://localhost:8003/healthz
 ```
 
-### 4. Inspect Chain Head
+### 4. Inspect chain head
 
 ```bash
 curl http://localhost:8001/v1/chain/head
 ```
 
-### 5. Inspect Mempool Size
+### 5. Inspect mempool size
 
 ```bash
 curl http://localhost:8001/v1/mempool
@@ -236,7 +219,7 @@ The node exposes a small optional HTTP API.
 
 ### Submit a Transaction
 
-Example request:
+Example payload:
 
 ```json
 {
@@ -263,26 +246,98 @@ Example call:
 curl -X POST http://localhost:8001/v1/transactions -H "Content-Type: application/json" --data @tx.json
 ```
 
+See [`docs/spec.md`](./docs/spec.md) for the config and API contract details.
+
 ## Project Layout
 
 ```text
 cmd/           Executables
 internal/      Private implementation packages
 configs/       Example config files
-docs/          Architecture and design notes
+docs/          Core project documentation
 scripts/       Helper scripts
 test/          Integration test area
 bin/           Local build output
 .github/       OSS templates and CI
 ```
 
-## Documentation
+## Documentation Map
 
-- [Architecture](./docs/architecture.md)
-- [Config format](./docs/config.md)
-- [Release guide](./docs/release.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Code of Conduct](./CODE_OF_CONDUCT.md)
+The project documentation is intentionally centered on four core docs:
+
+- [`README.md`](./README.md): entry point, workflow, contribution guidance, and community expectations
+- [`docs/spec.md`](./docs/spec.md): behavior, data contracts, config, and API surface
+- [`docs/architecture.md`](./docs/architecture.md): package boundaries, runtime flow, and system structure
+- [`docs/roadmap.md`](./docs/roadmap.md): current status, milestones, release direction, and deferred work
+
+This documentation split is a deliberate refactor decision to keep the project easier to scan, easier to maintain, and less prone to duplicated or stale guidance. Durable material that used to live in standalone config, release, contributing, and conduct docs now lives in these four documents.
+
+## Working Style and Contribution Expectations
+
+Please keep changes:
+
+- simple, explicit, and easy to review
+- aligned with the educational scope of the project
+- focused on correctness, readability, and maintainability
+- accompanied by doc updates when behavior changes
+- accompanied by tests when validation, state, storage, sync, or API behavior changes
+
+Prefer:
+
+- small, focused packages
+- standard library solutions unless a dependency clearly reduces complexity
+- straightforward control flow over abstraction-heavy patterns
+- clear error messages and readable names
+- deterministic blockchain rules and explicit validation
+
+Discuss first before making major changes to:
+
+- architecture
+- consensus rules
+- storage model
+- networking protocol shape
+- dependency strategy
+- large API surface changes
+
+### Pull Requests and Commits
+
+Keep pull requests small when practical. A good pull request explains:
+
+- what changed
+- why the change was needed
+- how it was validated
+- any follow-up work or notable limitations
+
+Use conventional commits where practical, for example:
+
+- `feat: ...`
+- `fix: ...`
+- `docs: ...`
+- `test: ...`
+- `chore: ...`
+
+### Community Expectations
+
+Project spaces include issues, pull requests, discussions, and related collaboration channels.
+
+Please:
+
+- be respectful, constructive, and inclusive
+- give actionable technical feedback
+- focus on the code and ideas, not the person
+- avoid harassment, personal attacks, discrimination, or deliberate disruption
+
+Maintainers may edit, remove, or reject comments, issues, pull requests, or contributions that do not meet these expectations.
+
+### Security Expectations
+
+- do not commit private keys, generated demo secrets, local data directories, or machine-specific credentials
+- generated local demo configs are for development only and should not be committed
+- if you notice a security issue, share a minimal report and avoid posting sensitive details publicly
+
+### Contribution License
+
+By contributing to BlockGo, you agree that your contributions are licensed under the repository's MIT license.
 
 ## Development Workflow
 
@@ -296,98 +351,15 @@ make build
 make ci
 ```
 
-## Release Readiness Notes
-
-This repository is release-ready for an educational `v0.x` style release, with the following scope:
-
-- minimal blockchain implementation
-- educational clarity over production hardening
-- fixed validator set
-- static peer configuration
-- no smart contract runtime
-- no dynamic consensus membership
-- no hostile-network protections
-
-### Tagging and Releases
-
-Use semantic version tags for releases, for example:
+Useful local commands:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+make run-cli
+go run ./cmd/blockgo gen-localnet -out ./configs/local
+docker compose up --build
 ```
 
-For the full release workflow, release checklist, and versioning guidance, see [docs/release.md](./docs/release.md).
-
-## Milestone Roadmap
-
-- **M0**: foundation, docs, CI, repository scaffold
-- **M1**: crypto primitives, tx/block types, hashing, merkle root, genesis
-- **M2**: UTXO validation engine
-- **M3**: persistence with bbolt
-- **M4**: node loop, mempool, block production, PoA rules
-- **M5**: P2P sync
-- **M6**: CLI, optional HTTP API, Docker Compose
-- **M7**: OSS polish, integration alignment, release-ready repository
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-If behavior changes, please also update the relevant docs and examples.
-
-## Release v0.1.0 Notes
-
-Summary
-- This is the first educational release of BlockGo (v0.1.0). It packages the repository in a reproducible way and documents the verified local demo flow.
-- Focus: documentation, CI/workflow polish, reproducible release artifacts, and clear contributor guidance.
-
-Highlights
-- Finalized Milestone 7: repository is release-ready and includes:
-  - core blockchain types (blocks, transactions, UTXO)
-  - transaction signing and validation
-  - PoA consensus with fixed validators and deterministic proposer selection
-  - bbolt-backed persistence
-  - minimal TCP P2P sync with static peers
-  - CLI tools for key generation, address derivation, tx creation, and localnet generation
-  - optional HTTP API for health, head inspection, mempool, and transaction submission
-  - Docker Compose local 3-node demo
-  - CI checks and release automation (tag-triggered)
-
-Validation Performed
-- Repository checks: `make fmt-check`, `make vet`, `make test`, `make build`, `make ci` — all passing in maintainer validation.
-- Local demo:
-  - `go run ./cmd/blockgo gen-localnet -out ./configs/local` — generates demo configs
-  - `docker compose up --build` — successfully starts three local nodes
-  - `curl http://localhost:8001/healthz` (and ports 8002/8003) — returns healthy responses
-- Release packaging:
-  - release-style builds and packaging validated locally with `make release-check`
-
-Known limitations (kept intentionally)
-- Fixed validator set (Proof of Authority); no dynamic membership.
-- Static peer configuration; no discovery protocol.
-- Educational scope: not hardened for adversarial public networks.
-- Minimal HTTP API focused on inspection and basic tx submission only.
-- No smart contracts / VM, no advanced fork choice/finality gadgetry.
-
-How to reproduce the release locally
-1. Run repository checks:
-   - `make fmt-check && make vet && make test && make build`
-2. Generate local demo config:
-   - `go run ./cmd/blockgo gen-localnet -out ./configs/local`
-3. Start demo:
-   - `docker compose up --build`
-4. Verify nodes:
-   - `curl http://localhost:8001/healthz`
-5. Build release binaries:
-   - `make release-check`
-6. Tag and push:
-   - `git tag -a v0.1.0 -m "Release v0.1.0"`
-   - `git push origin v0.1.0`
-
-Release assets (automated on tag)
-- Platform build archives for common platforms (linux/darwin, amd64/arm64)
-- Included files: `blockgo`, `blockgo-node`, `README.md`, `LICENSE`
+Use `make run-node` only after replacing the placeholder values in `configs/node.example.json`.
 
 ## License
 

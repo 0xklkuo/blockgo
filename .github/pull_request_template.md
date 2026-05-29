@@ -47,8 +47,9 @@ Confirm any release-facing impact.
 Check all docs touched by this change.
 
 - [ ] `README.md`
-- [ ] `docs/`
-- [ ] `CONTRIBUTING.md`
+- [ ] `docs/spec.md`
+- [ ] `docs/architecture.md`
+- [ ] `docs/roadmap.md`
 - [ ] `configs/*.example.json`
 - [ ] CLI help text or command examples
 
