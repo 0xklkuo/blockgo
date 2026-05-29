@@ -88,7 +88,7 @@ Validation target:
 
 ### Refactor Milestone 2 — runtime hardening and local developer flow
 
-Status: next.
+Status: completed.
 
 Scope:
 
@@ -106,13 +106,21 @@ Acceptance criteria:
 - malformed, oversized, or unknown-field transaction requests are rejected predictably
 - `make test` and `make ci` pass
 
+Completion notes:
+
+- `make run-node` now generates an isolated single-node local config in `configs/run-node`
+- local config generation supports `-mode` and `-nodes` so local and Docker flows stay explicit
+- HTTP server defaults now include explicit timeouts
+- the transaction submission endpoint now rejects oversized, trailing, or unknown-field JSON payloads
+- focused tests cover local config generation and API request decoding behavior
+
 Estimated effort:
 
 - 2 to 4 senior-engineer hours
 
 ### Refactor Milestone 3 — CI and release workflow cleanup
 
-Status: planned.
+Status: completed.
 
 Scope:
 
@@ -127,6 +135,13 @@ Acceptance criteria:
 - docs still match the final workflow
 - `make ci` remains the main local validation command
 
+Completion notes:
+
+- tag pushes now rely on the dedicated release workflow instead of also running the branch CI workflow
+- the release workflow validates once, then fans out to cross-build and package artifacts
+- release build flags now come from `Makefile` through the `release-dist` target instead of being duplicated in workflow YAML
+- roadmap and spec docs were aligned with the final local and release workflows
+
 Estimated effort:
 
 - 1 to 2 senior-engineer hours
@@ -135,10 +150,9 @@ Estimated effort:
 
 Good next improvements for the current scope include:
 
-- tighten CI and release workflow efficiency
-- harden HTTP API request handling and server defaults
-- expand focused tests where behavior is externally visible
-- keep config examples, CLI help text, and docs aligned
+- keep focused tests growing only where externally visible behavior changes
+- improve observability and debugging guidance without bloating the runtime
+- keep config examples, CLI help text, and docs aligned as the project evolves
 - preserve a clean local developer workflow
 
 These improvements should remain incremental and low-risk.
@@ -177,6 +191,7 @@ Current release posture:
 - educational `v0.x` scope
 - semantic version tags such as `v0.1.0`
 - GitHub releases are published from `v*` tags through the release workflow
+- the release workflow validates once, then cross-builds and publishes packaged artifacts
 - release notes should describe actual repository state only
 - documentation and example configs should match the codebase
 

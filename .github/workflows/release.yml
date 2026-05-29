@@ -9,9 +9,27 @@ permissions:
   contents: write
 
 jobs:
+  validate:
+    name: Validate release tag once
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run quality checks
+        run: make ci
+
   build:
     name: Build release artifacts
     runs-on: ubuntu-latest
+    needs: validate
 
     strategy:
       fail-fast: false
@@ -40,18 +58,8 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Run quality checks
-        run: make ci
-
       - name: Build binaries
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          VERSION: ${{ github.ref_name }}
-        run: |
-          mkdir -p dist
-          go build -trimpath -ldflags "-X 'blockgo/internal/version.Version=${VERSION}' -X 'blockgo/internal/version.Commit=${GITHUB_SHA}' -X 'blockgo/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" -o "dist/blockgo-${{ matrix.goos }}-${{ matrix.goarch }}" ./cmd/blockgo
-          go build -trimpath -ldflags "-X 'blockgo/internal/version.Version=${VERSION}' -X 'blockgo/internal/version.Commit=${GITHUB_SHA}' -X 'blockgo/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" -o "dist/blockgo-node-${{ matrix.goos }}-${{ matrix.goarch }}" ./cmd/blockgo-node
+        run: make release-dist VERSION=${{ github.ref_name }} GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} DIST_DIR=dist
 
       - name: Package artifacts
         run: |
